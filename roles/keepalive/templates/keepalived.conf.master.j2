@@ -1,0 +1,37 @@
+! Configuration File for keepalived
+
+global_defs {
+    enable_script_security
+    script_user postgres
+}
+
+
+vrrp_script chk_pgsql {
+    script "/etc/keepalived/scripts/pgsql_check.sh"
+    interval 2
+    weight -5
+    fall 2
+    rise 1
+}
+
+vrrp_instance Vi_1 {
+    state BACKUP
+    interface enp0s3
+    virtual_router_id 61
+    priority 100
+    nopreempt
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass 1111
+}
+
+track_script {
+    chk_pgsql
+}
+
+virtual_ipaddress {
+    192.168.56.100/24
+}
+
+}

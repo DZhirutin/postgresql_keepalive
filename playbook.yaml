@@ -1,0 +1,12 @@
+---
+- hosts: all
+  gather_facts: yes
+  become: yes
+  roles:
+    - postgres_14
+    - keepalive
+#    - ssh
+
+
+
+#pg_basebackup -P -R -X stream -c fast -h 192.168.56.11 -U postgres -D /var/lib/postgresql/14/main

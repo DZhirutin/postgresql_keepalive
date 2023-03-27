@@ -1,0 +1,6 @@
+node1_ip: "192.168.56.11"
+node2_ip: "192.168.56.12"
+pg_version: "14"
+
+INSTALL_PG_AS_MASTER: "{{ repl_mode is defined and repl_mode == 'master' }}"
+INSTALL_PG_AS_REPLICA: "{{ repl_mode is defined and repl_mode == 'replica' }}"

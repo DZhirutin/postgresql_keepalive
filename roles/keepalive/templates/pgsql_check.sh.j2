@@ -1,0 +1,35 @@
+#!/bin/bash
+set -x
+
+#Judge whether pg is alive
+A=`ps -C postgres --no-header | wc -l`
+
+#Judge where vip floats
+B=`ip a | grep 192.168.56.100 | wc -l`
+
+#Judge whether the slave library is waiting
+C=`ps -ef | grep postgres | grep "startup recovering" | grep -v grep | wc -l`
+
+#Judge whether the main library from the library link is normal
+D=`ps -ef | grep postgres | grep "receiver" | grep -v grep | wc -l`
+
+#Judge whether the main library connection slave library is normal
+E=`ps -ef | grep postgres | grep "sender" | grep -v grep | wc -l`
+
+#If pg is dead, write the message to journal and close keepalived
+if [[ $A -eq 0 ]]; then
+echo "`date +%y-%m-%d--%H:%M:%S` PostgreSQL stop so VIP stop" >> /etc/keepalived/log/check_pg.log
+sudo systemctl stop keepalived
+else
+
+#Judging that the main hang, the VIP floated from the position of ascension, so that he could read and write
+if [[ $B -eq 1 && $C -eq 1 && $D -eq 0 ]]; then
+echo "`date +%y-%m-%d--%H:%M:%S` Standby promote" >> /etc/keepalived/log/check_pg.log
+/usr/lib/postgresql/14/bin/pg_ctl promote -D /var/lib/postgresql/14/main
+fi
+
+#Determine that you are the Lord and lose contact
+if [[ $B -eq 1 && $C -eq 0 && $D -eq 0 && $E -eq 0 ]]; then
+echo "`date +%y-%m-%d--%H:%M:%S` can't find standby" >> /etc/keepalived/log/check_pg.log
+fi
+fi

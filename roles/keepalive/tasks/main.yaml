@@ -1,0 +1,14 @@
+---
+- name: Install keepalived as Master
+  import_tasks: install_keepalive_as_master.yaml
+  when: INSTALL_PG_AS_MASTER | bool
+  tags: 
+    - intall keepalived
+    - master
+
+- name: Install keepalived as Replica
+  import_tasks: install_keepalive_as_replica.yaml
+  when: INSTALL_PG_AS_REPLICA | bool
+  tags: 
+    - intall keepalived
+    - replica

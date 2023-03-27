@@ -1,0 +1,14 @@
+---
+- name: Install PostgreSQL as Master server
+  import_tasks: install_postgres_as_master.yaml
+  when: INSTALL_PG_AS_MASTER | bool
+  tags: 
+    - intall postgres
+    - master
+
+- name: Install PostgreSQL as Replica server
+  import_tasks: install_postgres_as_replica.yaml
+  when: INSTALL_PG_AS_REPLICA | bool
+  tags: 
+    - intall postgres
+    - replica

@@ -1,0 +1,68 @@
+---
+- name: install package
+  apt:
+    name: keepalived
+    update_cache: yes
+
+- name: Create folder /etc/keepalived/scripts
+  file:
+    path: /etc/keepalived/scripts
+    state: directory
+    recurse: yes
+    owner: postgres
+    group: postgres
+
+- name: Create folder /etc/keepalived/log
+  file:
+    path: /etc/keepalived/log
+    state: directory
+    recurse: yes
+    owner: postgres
+    group: postgres
+
+- name: copy configuration file keepalived.conf
+  template:
+    src: keepalived.conf.master.j2
+    dest: /etc/keepalived/keepalived.conf
+    owner: postgres
+    group: postgres
+    mode: 0600
+#  notify: restart keepalived
+
+- name: copy configuration file script pgsql_check.sh
+  template:
+    src: pgsql_check.sh.j2
+    dest: /etc/keepalived/scripts/pgsql_check.sh
+    owner: postgres
+    group: postgres
+    mode: 0755
+  notify: restart keepalived
+
+#- name: copy configuration file sysctl.conf
+#  template:
+#    src: sysctl.conf.j2
+#    dest: /etc/sysctl.conf
+#    owner: postgres
+#    group: postgres
+#    mode: 0600
+#  notify: restart keepalived
+#
+#- name: copy configuration file limits.conf
+#  template:
+#    src: limits.conf.j2
+#    dest: /etc/security/limits.conf
+#    owner: postgres
+#    group: postgres
+#    mode: 0600
+#  notify: restart keepalived
+#
+#- name: Execute command sysctl
+#  shell: | 
+#    sysctl -w vm.nr_hugepages=2048
+#    sysctl -p
+
+#- name: enable and start the service
+#  service:
+#    name: keepalived
+#    state: started
+#    enabled: yes

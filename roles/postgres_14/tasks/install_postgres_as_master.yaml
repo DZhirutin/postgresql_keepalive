@@ -1,0 +1,55 @@
+---
+- name: Add PostgreSQL apt key
+  apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state: present
+  become: true
+
+- name: Add PostgreSQL repository
+  apt_repository:
+  # ansible_distribution_release = xenial, bionic, focal
+    repo: deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main
+    state: present
+  become: true
+    
+- name: Install PostgreSQL 14
+  apt:
+    name: postgresql-14
+    update_cache: yes
+
+- name: Copy database configuration
+  template:
+    src: full_postgresql.conf.j2
+    dest: /etc/postgresql/14/main/postgresql.conf
+    group: postgres
+    mode: '0644'
+    owner: postgres
+
+- name: Copy user access configuration
+  template:
+    src: pg_hba.conf.j2
+    dest: /etc/postgresql/14/main/pg_hba.conf
+    group: postgres
+    mode: '0640'
+    owner: postgres
+
+- name: Restart service PostgreSQL-14
+  service:
+    name: postgresql@14-main.service
+    state: restarted
+
+- name: Add user postgres in sudo group
+  user:
+    name: postgres
+    comment: postgresql user
+    group: sudo
+    append: true
+
+- name: Add user "postgres" to sudo
+  lineinfile:
+    path: /etc/sudoers.d/postgres
+    line: 'postgres ALL=(ALL) NOPASSWD: ALL'
+    state: present
+    mode: 0440
+    create: yes
+    validate: 'visudo -cf %s'

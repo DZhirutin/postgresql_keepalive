@@ -1,0 +1,70 @@
+filebeat:
+  modules:
+    - module: postgresql
+      log:
+        enabled: true
+        input:
+          type: crawl
+          paths:
+            - "/var/log/postgresql/*/*.csv"
+          recurse: true
+        exclude_lines: 
+          - "\.log"
+        var.crawl_fields: ["msg", "user", "db", "details"]
+        include_lines: 
+          - "^[ER].*"
+        var.crawl_fields_strict: false
+        var.output_codec: plain
+Hit [S/s] to save the file or [R/r] to retry [Q/q] to quit: r
+# This configuration requires Filebeat version 6.2+
+
+filebeat.inputs:
+  # Define the log files to read.
+  - type: log
+    enabled: true
+    # Paths that should be crawled and fetched.
+    paths: 
+      - /var/log/postgresql/*.csvlog
+
+# Define PostgreSQL module
+filebeat.modules:
+- module: postgresql
+  # Enable the syslog module to parse the syslog files
+  enabled: true
+
+# Configure the log file path
+processors:
+    - rename: 
+        fields:
+        - from: "Beat.file.path"
+          to: "input_log_file"
+
+# CSV log expected fields, and their order
+postgresql.csv.keys: 
+  - time
+  - username
+  - database
+  - process_id
+  - connection_from
+  - session_id
+  - session_line_num
+  - command_tag
+  - session_start_time
+  - virtual_transaction_id
+  - transaction_id
+  - error_severity
+  - sql_state_code
+  - message
+  - detail
+  - hint
+  - query
+  - query_pos
+  - context
+  - file
+  - line
+  - function
+
+# PostgreSQL Bulk-import settings
+postgresql.bulk_import: true
+postgresql.bulk_size: 1000
+postgresql.max_bulk_requests: 5

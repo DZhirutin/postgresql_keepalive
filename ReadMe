@@ -1,0 +1,62 @@
+Vagrant role
+PGSQL master-slave+keepalive configuration по статье - 
+https://topic.alibabacloud.com/a/pgsql-master-slave-keepalived-high-availability-configuration_8_8_30004437.html
+
+***********************************
+
+SELECT pg_is_in_recovery(); - is a system function for retrieving the recovery status of an instance.
+SELECT pg_promote(); - make promote.
+
+rm -rf /var/lib/postgresql/14/main/*
+
+pg_basebackup -P -R -X stream -c fast -h 192.168.56.11 -U postgres -D /var/lib/postgresql/14/main
+pg_basebackup -P -R -X stream -c fast -h 192.168.56.12 -U postgres -D /var/lib/postgresql/14/main
+
+sudo systemctl start postgresql@14-main.service
+sudo systemctl start keepalived.service
+***********************************
+
+sudo systemctl start postgresql@14-main.service 
+sudo systemctl stop postgresql@14-main.service
+
+sudo systemctl start keepalived.service 
+sudo systemctl stop keepalived.service
+
+sudo journalctl -u keepalived.service 
+sudo journalctl -f -u keepalived.service 
+
+***********************************
+sudo groupadd -r keepalived_script
+sudo useradd -r -s /sbin/nologin -g keepalived_script -M keepalived_script
+
+
+
+High-availability scenarios:
+Pgsql Master + keepalived
+
+Resources:
+192.168.11.177 Main Library (called Server A)
+192.168.11.180 repository (called Server B)
+192.168.11.210 VIP
+
+1), Analog a pgsql service stop
+b take over VIP (automatic)
+b from library to main library (automatic)
+Start a Pgsql service and configure a as a standby (manual)
+
+2), Analog B's Pgsql service stop
+A take over VIP (automatic)
+A from the library to the main library (automatic)
+Start B's Pgsql service and configure B as standby (manual)
+
+Pgsql master-Slave +keepalived high-availability configuration
+
+**********************************
+Using the following command
+
+sudo kill -s $(keepalived --signum=DATA) $(cat /var/run/keepalived.pid)
+cat /tmp/keepalived.data
+You will find
+
+State = MASTER   or 
+State = BACKUP
